@@ -41,7 +41,8 @@ void main() {
 ```
 Here both `ImperativePaths` and `FunctionalPaths` inherit from `AbsPaths`, if one branch has @mustuse and the other one
 does not, and the programmer is not forced to explicitly take the return value and use it, these two derived classes cannot be used
-interchangeably.
+interchangeably. And even worse: in the case of FunctionalPaths, the result will be totally wrong
+([the OP author's problem](https://forum.dlang.org/post/ssagbvubpgwvewimsocj@forum.dlang.org)).
 
 ### @mustuse propagation: transitive closure
 In the following class inheritance tree:
@@ -80,18 +81,17 @@ Cons:
 >This is somewhat problematic for D, because we have a universal base class, Object, and neither it nor any of its methods are @mustuse.
 
 His reasoning is logically correct by itself, with the constraint that legacy code is un-modifiable.
-However, his proposal is not very useful because of this constraint:
+However, his proposal is not very useful because of the constraint:
 
 1. it won't help the existing library code where there is no @mustuse presence today. But, these library code are where the programmer 
-want the compiler help most,  as demonstrated by the OP user who brought up this issue on the forum. (This is also why Paul talked about
-Object, although it's not a very good example; instead we can think about std.lib.AbsPath above).
+**want the compiler help most**,  as demonstrated by the OP user who brought up this issue on the forum. (This is also why Paul talked about
+Object, although it's not a very good example; instead we can think about std.lib.AbsPath example above).
 2. if the new rule have to fully honor the legacy (with deficiency) code, how we can improve for future D?
 Also honoring legacy code, does not mean we should not even check for potential problems.
 Even typically we cannot modify the the legacy code, at least we want the compiler help to check where are the potential problems
 are; the compiler can give warning messages, and if they are manually verified, these findings should be formally 
 logged as bugs, and be fixed in the next release.
-
-And if we follow this line of reasoning, it also beg the question: whether one can remove @mustuse in a derived class. 
+3. and if we follow this line of reasoning, it also beg the question: whether one can remove @mustuse in a derived class. 
 E.g. let ImperativePaths (mutable implementation) inherit
 from FunctionalPaths (immutable implementation), and the caller can just use the `this` object as the result of the computation. Again,
 this logic is correct by itself, but it make the whole code base brittle: what if the library author decided later one day that s/he want to
@@ -131,7 +131,7 @@ the compiler can only issue warning (instead of error) messages. But the program
 these potential problems are located.
 
 And, once the programmer discovered one such misuse problem, s/he can try to find and fix all such potential problems by defining 
-a helper class RemedyPaths as follows:
+a helper `class RemedyPaths` as follows:
 ```d
 // class Paths is located in the source file that the programmer has no right to modify
 class RemedyPaths : std.lib.AbsPaths {  // helper class to trace all the occurrences of the @mustuse violation
@@ -149,8 +149,8 @@ Since this kind of warning message is transitive closure by design, so for the *
 compiler: as a debugging aid the warning message should indicate the **originating source of the annotation** 
 to make it clear to the programmers, e.g.:
 ```d
-warning: foo.d:123, AbsPaths.remove(int i)'s return value is discarded, violates the originating 
-annotation from RemedyPaths.d:456 @mustuse_remedy_legacy.
+warning: std.lib.foo.d:123, AbsPaths.remove(int i)'s return value is discarded, violates the originating 
+annotation from user.codebase.RemedyPaths.d:456 @mustuse_remedy_legacy.
 ```
 
 ### Summary
@@ -165,14 +165,14 @@ to pay attention to the returned value, instead of assuming the semantics of the
 ```
 it will save lots of debugging time, at the expense of just a few more key-strokes.
 
-2. the library author can to implement either ImperativePaths or FunctionalPaths, and the library users can choose 
+2. the library author can implement both ImperativePaths and FunctionalPaths, and the library users can choose 
 them interchangably for the maximal efficiency / performance without worrying about code breakage.
 
 
 ## History: command query separation principle
 
 Not discarding function return value has its root from the command query separation principle. 
-As an informal exercise: lets' derive command query separation principle from DbC.
+As an informal exercise: let's derive command query separation principle from DbC.
 
 The contract in DbC mostly exhibits as assertions in the code.
 
