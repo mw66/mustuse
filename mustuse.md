@@ -19,7 +19,7 @@ abstract class AbsPaths {
 
 class ImperativePaths : AbsPaths {  // will modify `this` object itself
   // no @mustuse annotation, with the implicit assumption that the caller will continue to use `this` object
-  overide AbsPaths remove(int i) {
+  override AbsPaths remove(int i) {
     ... // remove the i-th element of `this` object
     return this;
   }
@@ -27,7 +27,7 @@ class ImperativePaths : AbsPaths {  // will modify `this` object itself
 
 class FunctionalPaths : AbsPaths {  // will NOT modify `this` object, but return new (separate) object on modification
   @mustuse  // should have this annotation
-  overide AbsPaths remove(int i) {
+  override AbsPaths remove(int i) {
     AbsPaths other = new ImmutablePaths();
     ...  // `other` is the object with the i-th element of `this` object being removed; `this` object did not change
     return other;
