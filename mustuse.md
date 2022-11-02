@@ -1,5 +1,4 @@
-# @mustuse as function return value annotation
-
+# DIP: @mustuse as function return value annotation
 
 There are two scenarios we need to handle:
 
@@ -12,7 +11,7 @@ There are two scenarios we need to handle:
 the returned result. It has nothing to do with the (sub-)types of the returned value.
 
 Let's consider the following example:
-```
+```d
 abstract class AbsPaths {
   // no annotation
   abstract AbsPaths remove(int i);  // return an AbsPaths object with i-th element removed
@@ -46,7 +45,7 @@ interchangeably.
 
 ### @mustuse propagation: transitive closure
 In the following class inheritance tree:
-```
+```d
 ----------Base-------
 |         |         |
 Derived1  Derived2  Derived3 <-user only manually maked Derived3.remove() as @mustuse here
@@ -122,7 +121,7 @@ the compiler to generate error message. That's all.
 
 ### @mustuse_remedy_legacy for legacy code base and pre-built binaries
 Let's revisit the motivating example:
-```
+```d
 paths.remove(i); // compiles fine but does nothing
 paths = paths.remove(i); // works - what I erroneously thought the previous line was doing
 ```
@@ -133,7 +132,7 @@ these potential problems are located.
 
 And, once the programmer discovered one such misuse problem, s/he can try to find and fix all such potential problems by defining 
 a helper class RemedyPaths as follows:
-```
+```d
 // class Paths is located in the source file that the programmer has no right to modify
 class RemedyPaths : std.lib.AbsPaths {  // helper class to trace all the occurrences of the @mustuse violation
   @mustuse_remedy_legacy
@@ -149,7 +148,7 @@ return value are discarded.
 Since this kind of warning message is transitive closure by design, so for the *implicit* markings made by the 
 compiler: as a debugging aid the warning message should indicate the **originating source of the annotation** 
 to make it clear to the programmers, e.g.:
-```
+```d
 warning: foo.d:123, AbsPaths.remove(int i)'s return value is discarded, violates the originating 
 annotation from RemedyPaths.d:456 @mustuse_remedy_legacy.
 ```
@@ -160,7 +159,7 @@ With universal (i.e. transitive closure) @mustuse,
 1. when the library author has decided to return a value from a function, typically it's represent the computation result or status report,
 which the function caller should either use or check instead of discard. That is good engineering practice. It forces the programmer
 to pay attention to the returned value, instead of assuming the semantics of the function e.g. based purely on the function name.
-```
+```d
   ResultType result = someFunction();
   ... // use or check `result`
 ```
