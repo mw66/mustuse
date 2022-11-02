@@ -49,7 +49,7 @@ In the following class inheritance tree:
 ```d
 ----------Base-------
 |         |         |
-Derived1  Derived2  Derived3 <-user only manually maked Derived3.remove() as @mustuse here
+Derived1  Derived2  Derived3 <-user only manually marked Derived3.remove() as @mustuse here
 |         |         |
 GrandDr1  GrandDr2  GrandDr3
 |
