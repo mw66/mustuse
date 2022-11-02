@@ -83,9 +83,9 @@ Cons:
 His reasoning is logically correct by itself, with the constraint that legacy code is un-modifiable.
 However, his proposal is not very useful because of the constraint:
 
-1. it won't help the existing library code where there is no @mustuse presence today. But, these library code are where the programmer 
-**want the compiler help most**,  as demonstrated by the OP user who brought up this issue on the forum. (This is also why Paul talked about
-Object, although it's not a very good example; instead we can think about std.lib.AbsPath example above).
+1. it won't help the existing library code where there is no @mustuse presence today. But, **these library code are WHERE the programmer 
+want the compiler help most**,  as demonstrated by the OP user who brought up this issue on the forum. (This is also why Paul talked about
+`class Object`, although it's not a very good example; instead we can think about `std.lib.AbsPath` example above).
 2. if the new rule have to fully honor the legacy (with deficiency) code, how we can improve for future D?
 Also honoring legacy code, does not mean we should not even check for potential problems.
 Even typically we cannot modify the the legacy code, at least we want the compiler help to check where are the potential problems
